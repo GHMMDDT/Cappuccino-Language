@@ -529,16 +529,16 @@ public final class CappuccinoTokenizer extends AbstractCappuccinoTokenizer {
 		switch (this.target[this.position]) {
 			case '"': {
 				Token token = getStringLiteral(this.position);
-				System.err.println("[Cappuccino Tokenizer] Character Mismatch (Syntax Error): Incorrect matcher detected. Expected: s" + token.value.toString() + ", but found: " + token.value.toString() + ". Line: " + this.line);
+				System.err.println("[Cappuccino Tokenizer] String Matcher Mismatch (Syntax Error): Incorrect matcher detected. Expected: s" + token.value + ", but found: " + token.value + ". Line: " + this.line);
 				System.exit(-1);
 			}
 			case '\'': {
 				Token token = getCharacterLiteral(this.position);
-				System.err.println("[Cappuccino Tokenizer] Character Mismatch (Syntax Error): Incorrect matcher detected. Expected: c" + token.value.toString() + ", but found: " + token.value.toString() + ". Line: " + this.line);
+				System.err.println("[Cappuccino Tokenizer] Character Matcher Mismatch (Syntax Error): Incorrect matcher detected. Expected: c" + token.value + ", but found: " + token.value + ". Line: " + this.line);
 				System.exit(-1);
 			}
 			default: {
-				System.err.println("[Cappuccino Tokenizer] Character Mismatch (Syntax Error): Could not find a suitable place for character: '" + this.target[this.position] + "' within the matchers: Identifier, Symbols, and Whitespace; at line: " + this.line);
+				System.err.println("[Cappuccino Tokenizer] General Matcher Mismatch (Syntax Error): Could not find a suitable place for character: '" + this.target[this.position] + "' within the matchers: Identifier, Symbols and Whitespace; at line: " + this.line);
 				System.exit(-1);
 			}
 		}

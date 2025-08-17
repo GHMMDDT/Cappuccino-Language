@@ -119,15 +119,13 @@ public abstract class CCTreeAbstract {
 
 			if (!this.type.value.equals(this.literal.literal.type.type)) {
 				System.err.println("[Cappuccino Semantic] Type Mismatch (Syntax Error): Variable " + this.name.value.toString() + " cannot be assigned the value " + this.literal.literal.value.toString() + " (" + this.literal.literal.type.type + "), which is not compatible with type '" + this.type.value + "'. Line: " + this.line);
+				System.err.println("-----------------------------");
+				System.err.println("let " + this.name.value + ": " + this.type.value + " = " + this.literal.literal.value + "; // Incorrect Code; at line: " + this.line);
+				System.err.println("-----------------------------");
 				System.exit(-1);
 			}
 
-			this.subVariables.forEach(new Consumer<CCTSubVariable>() {
-				@Override
-				public void accept(CCTSubVariable cctSubVariable) {
-					cctSubVariable.visitor();
-				}
-			});
+			this.subVariables.forEach(CCTSubVariable::visitor);
 		}
 
 		@Override
