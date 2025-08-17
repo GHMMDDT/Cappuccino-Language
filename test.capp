@@ -1,2 +1,1 @@
-let asx: integer = 1578i;
-let asx2: integer = s"1054788i";
+let asx: integer = 1578i, asx2 = 157i;

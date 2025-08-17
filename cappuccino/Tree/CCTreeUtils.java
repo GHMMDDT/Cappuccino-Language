@@ -4,7 +4,7 @@ public class CCTreeUtils {
 	public static final int PARENT = 1 << 1;
 	public static final int CHILDREN = 1 << 2;
 
-	public static String getBuilderCompilationError(CCTreeAbstract parent, CCTreeAbstract current) {
+	public static String getBuilderCompilationError(CCTStatementAbstract parent, CCTStatementAbstract current) {
 		StringBuilder error = new StringBuilder();
 		error.append("[Cappuccino Semantic] Name Mismatch (Syntax Error): Redefinition in the ");
 
@@ -21,11 +21,11 @@ public class CCTreeUtils {
 				break;
 			}
 			case Variable: {
-				error.append(getBuildVariableError(parent, current, PARENT, CHILDREN));
+				error.append(getBuildVariableError(parent, current, PARENT));
 				break;
 			}
 			case SubVariable: {
-				error.append(getBuildVariableError(parent, current, CHILDREN, CHILDREN));
+				error.append(getBuildVariableError(parent, current, CHILDREN));
 				break;
 			}
 		}
@@ -34,10 +34,9 @@ public class CCTreeUtils {
 		return error.toString();
 	}
 
-	private static String getBuildVariableError(CCTreeAbstract parent, CCTreeAbstract current, int flag, int flag2) {
+	private static String getBuildVariableError(CCTStatementAbstract parent, CCTStatementAbstract current, int flag) {
 		StringBuilder subError = new StringBuilder();
 
-		// Original declaration info
 		if ((flag & PARENT) != 0) subError.append("Variable ");
 		else if ((flag & CHILDREN) != 0) subError.append("SubVariable ");
 
@@ -50,10 +49,8 @@ public class CCTreeUtils {
 				.append(")\n")
 				.append("--------------------------------------\n");
 
-		// Show original code
 		subError.append(buildVariableCode(parent, "Original Code"));
 
-		// Show duplicated code
 		subError.append(buildVariableCode(current, "Duplicated Code"));
 
 		return subError.toString();
@@ -62,8 +59,8 @@ public class CCTreeUtils {
 	private static String buildVariableCode(CCTreeAbstract variable, String label) {
 		StringBuilder code = new StringBuilder();
 
-		if (variable instanceof CCTreeAbstract.CCTVariable) {
-			CCTreeAbstract.CCTVariable var = (CCTreeAbstract.CCTVariable) variable;
+		if (variable instanceof CCTVariableStatement) {
+			CCTVariableStatement var = (CCTVariableStatement) variable;
 			code.append("let ")
 					.append(var.name.value)
 					.append(": ")
@@ -74,7 +71,7 @@ public class CCTreeUtils {
 			}
 
 			// SubVariables if exist
-			for (CCTreeAbstract.CCTVariable.CCTSubVariable subVar : var.subVariables) {
+			for (CCTVariableStatement.CCTSubVariableStatement subVar : var.subVariables) {
 				code.append(", ").append(subVar.name.value);
 				if (subVar.literal.literal != null) {
 					code.append(" = ").append(subVar.literal.literal.value);
@@ -83,9 +80,9 @@ public class CCTreeUtils {
 
 			code.append("; // ").append(label).append(", line: ").append(var.line).append("\n");
 		}
-		else if (variable instanceof CCTreeAbstract.CCTVariable.CCTSubVariable) {
-			CCTreeAbstract.CCTVariable.CCTSubVariable subVar = (CCTreeAbstract.CCTVariable.CCTSubVariable) variable;
-			code.append("let ")
+		else if (variable instanceof CCTVariableStatement.CCTSubVariableStatement) {
+			CCTVariableStatement.CCTSubVariableStatement subVar = (CCTVariableStatement.CCTSubVariableStatement) variable;
+			code.append("sublet ")
 					.append(subVar.name.value)
 					.append(": ")
 					.append(subVar.type.value);

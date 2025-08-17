@@ -1,5 +1,5 @@
 import cappuccino.Tokenizer.CappuccinoTokenizer;
-import cappuccino.Tokenizer.Token;
+import cappuccino.Tree.CCTCompilationUnit;
 import cappuccino.Tree.CCTreeAbstract;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class Main {
 
 		CCTreeAbstract.tokenizer = tokenizer;
 
-		CCTreeAbstract.CCTCompilationUnit compilationUnit = new CCTreeAbstract.CCTCompilationUnit();
+		CCTCompilationUnit compilationUnit = new CCTCompilationUnit();
 		compilationUnit.parser();
 		compilationUnit.visitor();
 
