@@ -1,12 +1,19 @@
-let a: string = s"hello, world";
+// Variable-Statement:
+let a: character = c'!';
+
+// Variable-Statement with subVariables-Statement (with type Irregular-specific):
+let b: character = c'9', c: number = 164874n, d = c'+';
+
+// Variable-Statement in Block-Statement:
+let e: string = s"hello, world";
 {
-	let b: string = s"hi, world";
+	let f: string = s"hi, world";
 	{
-		let c: integer = 157i;
+		let g: integer = 157i, h: string = s"Hello, World";
 	}
-	let c: boolean = true;
-	let d: character = c'f';
+	let g: boolean = true; // <- dupplciado pero funcional.
+	let h: character = c'f';
 	{
-		let e: integer = 157i;
+		let i: integer = 157i;
 	}
 }

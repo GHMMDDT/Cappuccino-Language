@@ -3,7 +3,6 @@ package cappuccino.Tree;
 import cappuccino.Tokenizer.Token;
 
 import java.util.LinkedList;
-import java.util.Objects;
 
 import static cappuccino.Tokenizer.Token.SyntaxType.*;
 import static cappuccino.Tree.CCTreeUtils.getBuilderCompilationError;
@@ -12,8 +11,13 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 	public LinkedList<CCTSubVariableStatement> subVariables = new LinkedList<>();
 	public CCTSubVariableStatement subVariable;
 	public CCTLiteral literal = new CCTLiteral();
+	public Token preType;
 	public boolean isSubLet = false;
 
+	/**
+	 * CCTVariableStatement:<br>
+	 * let &#60;Name&#62; : &#60;Type&#62; [ = &#60;Value&#62; ] ( , &#60;Name&#62; [: &#60;Type&#62;] [ = &#60;Value&#62; ] )* ;
+	 */
 	@Override
 	public void parser() {
 		validator(CURRENT | CONSUME, LetKeywordToken);
@@ -23,6 +27,7 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 		validator(CURRENT | CONSUME, ColonSymbolDelimiterToken);
 
 		type = validator(CURRENT | CONSUME, IdentifierToken);
+		preType = type;
 
 		if (validator(CURRENT | SEEK | CONSUME, EqualSymbolOperatorToken).type != BadToken) {
 			literal.parent = this;
@@ -30,9 +35,10 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 		}
 
 		while (validator(CURRENT | SEEK | CONSUME, CommaSymbolDelimiterToken).type != BadToken) {
-			subVariable = new CCTSubVariableStatement(this.type);
+			subVariable = new CCTSubVariableStatement(this.preType, this.type);
 			subVariable.parent = this;
 			subVariable.parser();
+			preType = subVariable.type;
 			subVariables.add(subVariable);
 		}
 
@@ -78,12 +84,19 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 
 	public static class CCTSubVariableStatement extends CCTVariableStatement {
 		public CCTLiteral literal = new CCTLiteral();
+		public Token subType;
+		public boolean changedType = false;
 
-		public CCTSubVariableStatement(Token type) {
+		public CCTSubVariableStatement(Token type, Token subType) {
 			this.type = type;
-			isSubLet = true;
+			this.subType = subType;
+			this.isSubLet = true;
 		}
 
+		/**
+		 * CCSubVariableStatement:<br>
+		 * &#60;Name&#62; [: &#60;Type&#62;] [ = &#60;Value&#62 ]
+		 */
 		@Override
 		public void parser() {
 			name = validator(CURRENT | CONSUME, IdentifierToken);
@@ -91,6 +104,7 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 
 			if (validator(CURRENT | SEEK | CONSUME, ColonSymbolDelimiterToken).type != BadToken) {
 				type = validator(CURRENT | CONSUME, IdentifierToken);
+				changedType = true;
 			}
 
 			if (validator(CURRENT | SEEK | CONSUME, EqualSymbolOperatorToken).type != BadToken) {
@@ -139,6 +153,18 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 						System.exit(-1);
 					}
 				});
+
+				if (!this.subType.value.equals(this.literal.literal.type.type) && this.literal.literal.type != UndefinedKeywordLiteralToken) {
+					if (!this.type.value.equals(this.literal.literal.type.type) && this.literal.literal.type != UndefinedKeywordLiteralToken) {
+						System.err.println("[Cappuccino Semantic] Type Mismatch (Syntax Error): SubVariable " + this.name.value.toString() + " cannot be assigned the value " + this.literal.literal.value.toString() + " (" + this.literal.literal.type.type + "), which is not compatible with type '" + this.type.value + "'. Line: " + this.line);
+						System.err.println("-----------------------------");
+						System.err.println("let " + this.name.value + ": " + this.type.value + " = " + this.literal.literal.value + "; // Incorrect Code; at line: " + this.line);
+						System.err.println("-----------------------------");
+						System.exit(-1);
+					}
+				}
+
+				if (changedType && this.subType.value.equals(this.literal.literal.type.type) && !this.type.value.equals(this.literal.literal.type.type)) this.type = this.subType;
 			}
 		}
 
