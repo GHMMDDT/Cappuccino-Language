@@ -168,7 +168,7 @@ public class Token {
 		NeutralKeywordLiteralToken(new CharSlice(new char[]{'n','e','u','t','r','a','l'})),
 
 		// Special:
-		EndOfInputToken(new CharSlice('\3')),
+		EndOfInputToken(new CharSlice('\3'), new CharSlice(new char[] { 'e', 'n', 'd' })),
 		BadToken(new CharSlice('\0'));
 
 		public CharSlice assignation;

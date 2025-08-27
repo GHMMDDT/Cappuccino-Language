@@ -16,7 +16,8 @@ public abstract class CCTreeAbstract {
 
 	public enum Kind {
 		CompilationUnit,
-		Variable, SubVariable
+		Variable, SubVariable,
+		Block;
 	}
 
 	public static CappuccinoTokenizer tokenizer;

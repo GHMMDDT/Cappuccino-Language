@@ -3,6 +3,7 @@ package cappuccino.Tree;
 import cappuccino.Tokenizer.Token;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
 import static cappuccino.Tokenizer.Token.SyntaxType.*;
 import static cappuccino.Tree.CCTreeUtils.getBuilderCompilationError;
@@ -11,6 +12,7 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 	public LinkedList<CCTSubVariableStatement> subVariables = new LinkedList<>();
 	public CCTSubVariableStatement subVariable;
 	public CCTLiteral literal = new CCTLiteral();
+	public boolean isSubLet = false;
 
 	@Override
 	public void parser() {
@@ -39,24 +41,34 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 
 	@Override
 	public void visitor() {
-		if (parent.getKind() == Kind.CompilationUnit) {
-			((CCTCompilationUnit) parent).variables.forEach(cctVariableStatement -> {
-				if (cctVariableStatement.name.value.equals(name.value) && cctVariableStatement != this) {
-					System.err.println(getBuilderCompilationError(this, cctVariableStatement));
+		this.subVariables.forEach(CCTSubVariableStatement::visitor);
+
+		while (parent != null && parent.getKind() == Kind.Block) {
+			((CCTBlockStatement) parent).variables.forEach((cctVariableStatement) -> {
+				if ((cctVariableStatement.name.value.equals(name.value) && cctVariableStatement != this) && cctVariableStatement.line < line) {
+					System.err.println(getBuilderCompilationError(cctVariableStatement, this));
+					System.exit(-1);
+				}
+			});
+			parent = parent.parent;
+		}
+
+		if (parent != null && parent.getKind() == Kind.CompilationUnit) {
+			((CCTCompilationUnit) parent).variables.forEach((cctVariableStatement) -> {
+				if (cctVariableStatement.name.value.equals(name.value) && cctVariableStatement != this && cctVariableStatement.line < line) {
+					System.err.println(getBuilderCompilationError(cctVariableStatement, this));
 					System.exit(-1);
 				}
 			});
 		}
 
-		if (!this.type.value.equals(this.literal.literal.type.type)) {
+		if (!this.type.value.equals(this.literal.literal.type.type) && this.literal.literal.type != UndefinedKeywordLiteralToken) {
 			System.err.println("[Cappuccino Semantic] Type Mismatch (Syntax Error): Variable " + this.name.value.toString() + " cannot be assigned the value " + this.literal.literal.value.toString() + " (" + this.literal.literal.type.type + "), which is not compatible with type '" + this.type.value + "'. Line: " + this.line);
 			System.err.println("-----------------------------");
 			System.err.println("let " + this.name.value + ": " + this.type.value + " = " + this.literal.literal.value + "; // Incorrect Code; at line: " + this.line);
 			System.err.println("-----------------------------");
 			System.exit(-1);
 		}
-
-		this.subVariables.forEach(CCTSubVariableStatement::visitor);
 	}
 
 	@Override
@@ -64,11 +76,12 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 		return Kind.Variable;
 	}
 
-	public static class CCTSubVariableStatement extends CCTStatementAbstract {
+	public static class CCTSubVariableStatement extends CCTVariableStatement {
 		public CCTLiteral literal = new CCTLiteral();
 
 		public CCTSubVariableStatement(Token type) {
 			this.type = type;
+			isSubLet = true;
 		}
 
 		@Override
@@ -84,18 +97,35 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 				literal.parent = this;
 				literal.parser();
 			}
+
+			if (parent.parent.getKind() == Kind.CompilationUnit) {
+				((CCTCompilationUnit) parent.parent).variables.add(this);
+			} else if (parent.parent.getKind() == Kind.Block) {
+				((CCTBlockStatement) parent.parent).variables.add(this);
+			}
 		}
 
 		@Override
 		public void visitor() {
 			if (parent.getKind() == Kind.Variable) {
-				if (parent.getKind() == Kind.CompilationUnit) {
-					((CCTCompilationUnit) parent.parent).variables.forEach(cctSubVariable -> {
-						if (cctSubVariable.name.value.equals(name.value)) {
+				while (parent.getKind() == Kind.Block) {
+					((CCTBlockStatement) parent).variables.forEach((cctSubVariable) -> {
+						if (cctSubVariable.name.value.equals(name.value) && cctSubVariable != this && cctSubVariable.line < line) {
 							System.err.println(getBuilderCompilationError((CCTStatementAbstract) this.parent, this));
 							System.exit(-1);
 						}
 					});
+					parent = parent.parent;
+				}
+
+				if (parent.getKind() == Kind.CompilationUnit) {
+					((CCTCompilationUnit) parent).variables.forEach((cctSubVariable) -> {
+						if (cctSubVariable.name.value.equals(name.value) && cctSubVariable != this  && cctSubVariable.line < line) {
+							System.err.println(getBuilderCompilationError((CCTStatementAbstract) this.parent, this));
+							System.exit(-1);
+						}
+					});
+					parent = parent.parent;
 				}
 
 				if (((CCTStatementAbstract) parent).name.value.equals(this.name.value)) {
@@ -105,7 +135,7 @@ public class CCTVariableStatement extends CCTStatementAbstract {
 
 				((CCTVariableStatement) parent).subVariables.forEach(cctSubVariableStatement -> {
 					if (cctSubVariableStatement.name.value.equals(name.value) && cctSubVariableStatement != this) {
-						System.err.println(getBuilderCompilationError(this, cctSubVariableStatement));
+						System.err.println(getBuilderCompilationError(cctSubVariableStatement, this));
 						System.exit(-1);
 					}
 				});

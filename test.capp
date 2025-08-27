@@ -1,1 +1,12 @@
-let asx: integer = 1578i, asx2 = 157i;
+let a: string = s"hello, world";
+{
+	let b: string = s"hi, world";
+	{
+		let c: integer = 157i;
+	}
+	let c: boolean = true;
+	let d: character = c'f';
+	{
+		let e: integer = 157i;
+	}
+}

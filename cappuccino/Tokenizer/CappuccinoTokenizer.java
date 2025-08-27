@@ -498,6 +498,7 @@ public final class CappuccinoTokenizer extends AbstractCappuccinoTokenizer {
 		this.token = this.newToken;
 
 		if (this.position >= this.length) {
+			this.EndToken.line = line;
 			this.newToken = EndToken;
 			return;
 		}
@@ -506,6 +507,7 @@ public final class CappuccinoTokenizer extends AbstractCappuccinoTokenizer {
 			this.getWhitespace();
 
 			if (this.position >= this.length) {
+				this.EndToken.line = line;
 				this.newToken = EndToken;
 				return;
 			}

@@ -2,25 +2,24 @@ package cappuccino.Tree;
 
 import cappuccino.Tokenizer.Token;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 import static cappuccino.Tokenizer.Token.SyntaxType.*;
 
-public class CCTCompilationUnit extends CCTreeAbstract {
+public class CCTBlockStatement extends CCTStatementAbstract{
 	public LinkedList<CCTVariableStatement> variables = new LinkedList();
 	public LinkedList<CCTBlockStatement> block = new LinkedList<>();
 
 	@Override
-	public Kind getKind() {
-		return Kind.CompilationUnit;
-	}
-
-	@Override
 	public void parser() {
+		validator(CURRENT | CONSUME, CurlyLeftSymbolOperatorToken);
+
 		Token t = validator(CURRENT | SEEK);
+
 		boolean isValid = false;
-		while (t.type != EndOfInputToken) {
+		while (t.type != CurlyRightSymbolOperatorToken) {
 			if (t.type == LetKeywordToken) {
 				CCTVariableStatement statement = new CCTVariableStatement();
 				statement.parent = this;
@@ -41,14 +40,26 @@ public class CCTCompilationUnit extends CCTreeAbstract {
 				continue;
 			}
 
-			System.err.println("[Cappuccino AATS (ATS)] Syntax Mismatch (Syntax Error): expected " + t.type + " but found '" + t.value.toString() + "' (" + t.type.toString() + ") in statement '" + this.getKind().name() + "' at line " + t.line);
+			if (t.type == EndOfInputToken) {
+				int line = t.line;
+				System.err.println("[Cappuccino AATS (ATS)] Syntax Mismatch (Syntax Error): expected '}' but found '" + t.value.toString() + "' (" + t.type.type + ") in statement '" + this.getKind().name() + "' at line " + (line == 0 ? 1 : line));
+				System.exit(-1);
+			}
+
 			System.exit(-1);
 		}
+
+		validator(CURRENT | CONSUME, CurlyRightSymbolOperatorToken);
 	}
 
 	@Override
 	public void visitor() {
 		variables.forEach(CCTVariableStatement::visitor);
 		block.forEach(CCTBlockStatement::visitor);
+	}
+
+	@Override
+	public Kind getKind() {
+		return Kind.Block;
 	}
 }

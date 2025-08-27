@@ -9,13 +9,13 @@ public class CCTreeUtils {
 		error.append("[Cappuccino Semantic] Name Mismatch (Syntax Error): Redefinition in the ");
 
 		switch (parent.getKind()) {
-			case CompilationUnit: {
+			case CompilationUnit: case Block: {
 				error.append("declaration of the name '")
 						.append(current.name.value)
 						.append("' at line: ")
 						.append(current.name.line);
-				error.append(" (previously declared at line ")
-						.append(parent.name.line)
+				error.append(" (previously declared at line ");
+				error.append(parent.line)
 						.append(")\n");
 				error.append("--------------------------------------\n");
 				break;
@@ -43,9 +43,9 @@ public class CCTreeUtils {
 		subError.append("with the name '")
 				.append(current.name.value)
 				.append("' at line: ")
-				.append(current.name.line)
+				.append(current.line)
 				.append(" (previously declared at line ")
-				.append(parent.name.line)
+				.append(parent.line)
 				.append(")\n")
 				.append("--------------------------------------\n");
 
@@ -59,8 +59,21 @@ public class CCTreeUtils {
 	private static String buildVariableCode(CCTreeAbstract variable, String label) {
 		StringBuilder code = new StringBuilder();
 
-		if (variable instanceof CCTVariableStatement) {
+		if (variable instanceof CCTVariableStatement.CCTSubVariableStatement) {
+			CCTVariableStatement.CCTSubVariableStatement subVar = (CCTVariableStatement.CCTSubVariableStatement) variable;
+			code.append("sublet ")
+					.append(subVar.name.value)
+					.append(": ")
+					.append(subVar.type.value);
+
+			if (subVar.literal.literal != null) {
+				code.append(" = ").append(subVar.literal.literal.value);
+			}
+
+			code.append("; // ").append(label).append(", line: ").append(subVar.line).append("\n");
+		} else if (variable instanceof CCTVariableStatement) {
 			CCTVariableStatement var = (CCTVariableStatement) variable;
+			if (var.isSubLet) code.append("sub");
 			code.append("let ")
 					.append(var.name.value)
 					.append(": ")
@@ -79,19 +92,6 @@ public class CCTreeUtils {
 			}
 
 			code.append("; // ").append(label).append(", line: ").append(var.line).append("\n");
-		}
-		else if (variable instanceof CCTVariableStatement.CCTSubVariableStatement) {
-			CCTVariableStatement.CCTSubVariableStatement subVar = (CCTVariableStatement.CCTSubVariableStatement) variable;
-			code.append("sublet ")
-					.append(subVar.name.value)
-					.append(": ")
-					.append(subVar.type.value);
-
-			if (subVar.literal.literal != null) {
-				code.append(" = ").append(subVar.literal.literal.value);
-			}
-
-			code.append("; // ").append(label).append(", line: ").append(subVar.line).append("\n");
 		}
 
 		return code.toString();
