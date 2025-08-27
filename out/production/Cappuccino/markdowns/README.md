@@ -1,8 +1,6 @@
 # Cappuccino Language - Welcome
 
-**Cappuccino** es un lengauje de programacion experimental y nuevo, que se fue diseñado para ser <u>moderno</u> y <u>amigable</u>, asi mismo agregar nuevas funciones para serlo mas divertido.
+**Cappuccino** is an experimental and new programming language, designed to be <u>modern</u> and <u>friendly</u>, as well as to add new features to make it more fun.
 
-Aparte de resolver algunos problemas que tal vez otros no puedan hacerlo o son dificil de hacerlo.<br>
-Aclarando: no significa que es va hacer el **Mejor lenguaje de programacion del universo o mundo**, solo es un lenguaje de programacion que quiere ayudar a resolver problemas cotidianos.
-
-
+In addition to solving some problems that perhaps others cannot or are difficult to address.<br>
+Clarifying: this does not mean it will be the **Best programming language in the universe or the world**, it is just a programming language that aims to help solve everyday problems.
